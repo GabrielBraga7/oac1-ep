@@ -1,52 +1,56 @@
+import java.util.Scanner;
+
 public class Main{
     public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+        double x = getValue("Digite o valor de x:", sc);
+        double n = getValue("Digite o valor de n:", sc);
         //calcular a maior P-ésima potência de X que torne X^P menor ou igual a um dado N.
-        double n = 9;
-        double x = 0.2;
         
-        if(n <= 0 || x <= 0){
-            System.out.println("Nao!"); //nenhum número elevado a uma potência pode ser menor ou igual a zero.
+        if(n <= 0 || x <= 0 || x == 1){
+            System.out.println("Não é possível efetuar a operação, já que ou n <= 0, ou x <= 0 ou x = 1");
         }
         else{
-            System.out.println(calculaP(x, n));
+            int p = calculaP(x, n);
+            System.out.println(p == Integer.MAX_VALUE ? "Infinito" : p);
         }
+        sc.close();
+    }
+
+    public static double getValue(String msg, Scanner sc){
+        System.out.println(msg);
+        return sc.nextDouble();
     }
 
     public static int calculaP(double x, double n){
-        double res = x;
-        if(x <= n){
-            return calculaPMaiorQue0(x, n, res, x);
+        if(x > n){
+            if(x < 1)
+                return calculaPXMaiorN(x, n, 1, 1, x);
+            else
+                return calculaPXMaiorN(x, n, 1, -1, 1/x);
         }
         else{
-            return calculaPMenorIgualA0(x, n, res);
+            if(x < 1)
+                return Integer.MAX_VALUE;
+            else
+                return calculaPXMenorIgualN(x, n, 0, 1, x);
         }
         
     } 
-    public static int calculaPMenorIgualA0(double x, double n, double res){
-        int p = 1;
-        if(x > 1){
-            while(res > n){
-                res *= (1/x);
-                p--;
-            }
-        }
-        else{
-            res = (1/res);
-            p = 0;
-            while(res < n){
-                res *= (1/x);
-                p--;
-            }
+    public static int calculaPXMaiorN(double x, double n, int p, int incremento, double factor){
+        double res = x;
+        while(res > n){
+            res *= factor;
+            p += incremento;
         }
         return p;
     }
-    public static int calculaPMaiorQue0(double x, double n, double res, double factorMult){
-        int p = 0;
+    public static int calculaPXMenorIgualN(double x, double n, int p, int incremento, double factor){
+        double res = x;
         while(res <= n){
-            res *= x;
-            p++;
+            res *= factor;
+            p += incremento;
         }
         return p;
     }
-     
 }
