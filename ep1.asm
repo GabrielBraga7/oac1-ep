@@ -6,27 +6,22 @@
 .text
 .globl main
 main:
+
+	subu $sp,$sp,16
+
         la $a0, $mensagemEntrada
         jal printStr                    #pede para o usuario inserir
         jal readDouble                  #o valor do numero x.
-        mov.d $f12,$f0                  #armazena x no registrador f12.
+        sdc1 $f0, 12($sp)		#armazena o valor de x na pilha
         
+       
         la $a0, $mensagemEntrada2
         jal printStr                    #pede para o usuario inserir
         jal readDouble                  #o valor do numero N.
-        mov.d $f14,$f0                  #armazena N no registrador f14.
-
+	sdc1 $f0, 4($sp)                 #armazena o valor de N na pilha
+        
         l.d $f16, $zeroDouble   #atribui 0 ao registrador f16.
         l.d $f18, $oneDouble    #atribui 1 ao registrador f18.
-
-        c.le.d $f12, $f16       #verifica se x <= 0. caso verdadeiro,
-        bc1t printError         #imprime uma mensagem de erro.
-
-        c.le.d $f14, $f16       #verifica se N <= 0. caso verdadeiro,
-        bc1t printError         #imprime uma mensagem de erro.
-
-        c.eq.d $f12, $f18       #verifica se x = 1. caso verdadeiro,
-        bc1t printError         #imprime uma mensagem de erro.
 
         jal calculaP            #executa a funcao calculaP.
         
@@ -39,15 +34,32 @@ main:
         j exit           
 
 calculaP:
+
+        ldc1 $f14, 4($sp)
+        ldc1 $f12, 12($sp)
+        
+        addu $sp,$sp,16 #retira espaço ocupado da pilha
+
+	c.le.d $f12, $f16       #verifica se x <= 0. caso verdadeiro,
+        bc1t printError         #imprime uma mensagem de erro.
+
+        c.le.d $f14, $f16       #verifica se N <= 0. caso verdadeiro,
+        bc1t printError         #imprime uma mensagem de erro.
+
+        c.eq.d $f12, $f18       #verifica se x = 1. caso verdadeiro,
+        bc1t printError         #imprime uma mensagem de erro.
+        
         add.d $f20, $f16, $f12  #cria o registrador f20
         c.lt.d $f12, $f14 # if(x < n)
-        bc1t calculaPXMenorIgualN
-        j calculaPXMaiorN     
+        bc1t calculaPXMenorIgualN #desvia para calculaPXMenorIgualN
+        j calculaPXMaiorN     #senão, desvia para calculaPXMaiorN
 
 
 calculaPXMenorIgualN:
+       
         c.lt.d $f12, $f18 #if(x < 1)
         bc1t printErroInfinito
+        
         li $s0, 0 # valor inicial de p
         li $s1, 1 # valor de incremento (1 ou -1)
         add.d $f22, $f16, $f12 #cria parâmetro fator a se multiplicar, com valor = x
