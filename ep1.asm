@@ -7,15 +7,15 @@
 .globl main
 main:
 
-	subu $sp,$sp,16
+	subu $sp,$sp,16 #abre espaço na pilha para 2 valores de tipo double
 
-        la $a0, $mensagemEntrada
-        jal printStr                    #pede para o usuario inserir
-        jal readDouble                  #o valor do numero x.
+        la $a0, $mensagemEntrada 	#passa a mensagem a ser exibida, no caso, a mensagem de "Digite o valor de x"
+        jal printStr                    #chama a função de imprimir texto
+        jal readDouble                  #lê o valor double inserido e coloca no registrador $f0
         sdc1 $f0, 12($sp)		#armazena o valor de x na pilha
         
        
-        la $a0, $mensagemEntrada2
+        la $a0, $mensagemEntrada2	#passa a mensagem a ser exibida, no caso, a mensagem de "Digite o valor de n"
         jal printStr                    #pede para o usuario inserir
         jal readDouble                  #o valor do numero N.
 	sdc1 $f0, 4($sp)                 #armazena o valor de N na pilha
@@ -35,10 +35,10 @@ main:
 
 calculaP:
 
-        ldc1 $f14, 4($sp)
-        ldc1 $f12, 12($sp)
+        ldc1 $f14, 4($sp) 	#recupera o valor de 'n' da pilha e armazena em $f14
+        ldc1 $f12, 12($sp)	#recupera o valor de 'x' da pilha e armazena em $f12
         
-        addu $sp,$sp,16 #retira espaço ocupado da pilha
+        addu $sp,$sp,16 	#retira espaço ocupado da pilha
 
 	c.le.d $f12, $f16       #verifica se x <= 0. caso verdadeiro,
         bc1t printError         #imprime uma mensagem de erro.
@@ -49,8 +49,8 @@ calculaP:
         c.eq.d $f12, $f18       #verifica se x = 1. caso verdadeiro,
         bc1t printError         #imprime uma mensagem de erro.
         
-        add.d $f20, $f16, $f12  #cria o registrador f20
-        c.lt.d $f12, $f14 # if(x < n)
+        add.d $f20, $f16, $f12  #atribui o valor de 'x' ao registrador $f20, que servirá como uma variável auxiliar para ir simulando x^p
+        c.lt.d $f12, $f14 	# if(x < n)
         bc1t calculaPXMenorIgualN #desvia para calculaPXMenorIgualN
         j calculaPXMaiorN     #senão, desvia para calculaPXMaiorN
 
@@ -58,7 +58,7 @@ calculaP:
 calculaPXMenorIgualN:
        
         c.lt.d $f12, $f18 #if(x < 1)
-        bc1t printErroInfinito
+        bc1t printErroInfinito	#erro, pois se x < 1 e x <= n, o maior 'p' não pode ser determinado, já que quanto maior 'p', menor será 'x'
         
         li $s0, 0 # valor inicial de p
         li $s1, 1 # valor de incremento (1 ou -1)
@@ -87,49 +87,49 @@ setValoresPPositivo:
 
 loopXMaiorN:
         c.le.d $f20,$f14 #se res <= n, ou seja, se res > n der falso, ele retorna 
-        bc1t retorna
-        mul.d $f20, $f20, $f22
-        add $s0, $s0, $s1
+        bc1t retorna	
+        mul.d $f20, $f20, $f22	#vai realizando a potenciação de x e armazenando em $f20
+        add $s0, $s0, $s1 #incrementa 'p'
         j loopXMaiorN
 
 
 loopXMenorIgualN:
-        c.lt.d $f14,$f20
+        c.lt.d $f14,$f20 #se n < res, ele retorna
         bc1t retorna
-        mul.d $f20, $f20, $f22
-        add $s0, $s0, $s1
+        mul.d $f20, $f20, $f22 #vai realizando a potenciação de x e armazenando em $f20
+        add $s0, $s0, $s1 #incrementa 'p'
         j loopXMenorIgualN
 
 
 printInt:
-        li $v0,1                       # imprime o resultado
+        li $v0,1                       # passa para $v0 o valor 1, indicando para imprimir um inteiro
         j syscallAndReturn
 
 printError:
-        la $a0, $erro
+        la $a0, $erro	#imprime texto, passando para $a0 o texto de erro
         jal printStr
-	j exit
+	j exit	#encerra a execução caso ocorra algo de errado
 
 printStr:
-        li $v0,4                        # imprime o resultado
+        li $v0,4                        # passa para $v0 o valor 4, indicando para imprimir texto
         j syscallAndReturn
 
 
 
 readDouble:
-        li $v0, 7
+        li $v0, 7	#passa para $v0 o valor 7, indicando leitura de double
         j syscallAndReturn
 
 
 
-syscallAndReturn:
+syscallAndReturn: 	#realiza a syscall de acordo com o parâmetro $v0, e retorna para onde parou na execução
         syscall
         j retorna
 
 
 
 printErroInfinito:
-        la $a0, $erroInfinito
+        la $a0, $erroInfinito	#carrega para $a0 a mensagem de 'p' ser infinito
         jal printStr
         j exit
 
@@ -139,7 +139,7 @@ retorna:
 
 
 exit:
-        li $v0,10                        # termina
+        li $v0,10  # termina
         syscall
 
 .data
