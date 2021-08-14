@@ -1,5 +1,5 @@
 //Programa em linguagem Java que, ao receber um numero N e outro numero x (como entrada pelo usuario),
-//calcula o maior grau a que eh possivel elevar x sem que o resultado ultrapasse o valor de N.
+//calcula o maior grau a que eh possivel elevar x sem que o resultado ultrapasse o valor de N
 
 import java.util.Scanner;
 
